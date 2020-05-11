@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>covid-19-data-test</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <meta http-equiv="Content-Script-Type" content="text/javascript" />
+ </head>
+ <body>
+  <div id="OUTPUT"></div>
+  <script type="text/javascript">
+    
+    var output = '';
+  
+    fetch("https://pomber.github.io/covid19/timeseries.json")
+    .then(response => response.json())
+    .then(data => {
+        
+        Object.keys(data).forEach(function(key) {
+            let s = data[key].length-1;
+            let d = data[key];
+                        
+            for(let i=0; i<s; i++) {
+                if (d[s-i-1].confirmed > d[s-i].confirmed) { 
+                    output += key+' confirmed index: '+(s-i-1)+' > '+(s-i)+'</br>';
+                }
+                if (d[s-i].deaths < d[s-i-1].deaths) { 
+                    output += key+': deaths index: '+(s-i-1)+' > '+(s-i)+'</br>';
+                }
+                if (d[s-i].recovered < d[s-i-1].recovered) { 
+                    output += key+': recovered index: '+(s-i-1)+' > '+(s-i)+'</br>';
+                }
+            }
+        }); 
+        document.getElementById("OUTPUT").innerHTML = output;
+    });
+  </script>
+ </body>
+</html>
