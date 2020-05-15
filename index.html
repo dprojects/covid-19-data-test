@@ -2,36 +2,80 @@
 <html>
  <head>
   <title>covid-19-data-test</title>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta http-equiv="Content-Style-Type" content="text/css" />
     <meta http-equiv="Content-Script-Type" content="text/javascript" />
  </head>
+ <style>
+    table td {
+        padding: 5px 15px;
+        border-bottom: 1px dotted red;
+    }
+ </style>
  <body>
   <div id="OUTPUT"></div>
   <script type="text/javascript">
     
     var output = '';
-  
+    
+    function setRow(a, b, c, d, e) {
+    
+        output += '<tr>';
+        output += '<td>'+a+'</td>';
+        output += '<td>'+b+'</td>';
+        output += '<td>'+c+'</td>';
+        output += '<td>'+d+'</td>';
+        output += '<td>'+e+'</td>';
+        output += '</tr>';
+    }
+    
     fetch("https://pomber.github.io/covid19/timeseries.json")
     .then(response => response.json())
     .then(data => {
         
+        console.log(data);
+        
+        output += '<table>';
+        
+        setRow( 'Place', 'Index', 'Date', 'Invalid', 'Value');
+        
         Object.keys(data).forEach(function(key) {
-            let s = data[key].length-1;
-            let d = data[key];
-                        
-            for(let i=0; i<s; i++) {
-                if (d[s-i-1].confirmed > d[s-i].confirmed) { 
-                    output += key+' confirmed index: '+(s-i-1)+' > '+(s-i)+'</br>';
+            
+            let d = data[key];    // array for single place
+            let s = d.length-1;   // size
+            
+            // set the higher value (just the last one should be)
+            let maxC = d[s].confirmed;
+            let maxD = d[s].deaths;
+            let maxR = d[s].recovered;
+            
+            for(let i=s; i>0; i--) {
+            
+                let p = i-1;   // previous index
+                
+                // search for higher values in the past (invalid) 
+                if (d[p].confirmed > maxC) { 
+                    setRow( key, p, d[p].date, 'invalid Confirmed: ', d[p].confirmed );
+                } else { 
+                    maxC = d[p].confirmed; // replace higher value with last correct one
                 }
-                if (d[s-i].deaths < d[s-i-1].deaths) { 
-                    output += key+': deaths index: '+(s-i-1)+' > '+(s-i)+'</br>';
+                
+                if (d[p].deaths > maxD) { 
+                    setRow( key, p, d[p].date, 'invalid Deaths: ', d[p].deaths );
+                } else {
+                    maxD = d[p].deaths; // replace higher value with last correct one
                 }
-                if (d[s-i].recovered < d[s-i-1].recovered) { 
-                    output += key+': recovered index: '+(s-i-1)+' > '+(s-i)+'</br>';
+                
+                if (d[p].recovered > maxR) { 
+                    setRow( key, p, d[p].date, 'invalid Recovered: ', d[p].recovered );
+                } else {
+                    maxR = d[p].recovered; // replace higher value with last correct one
                 }
             }
         }); 
+        
+        output += '</table>';
+        
         document.getElementById("OUTPUT").innerHTML = output;
     });
   </script>
