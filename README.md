@@ -11,8 +11,15 @@ at "2020-3-19" there is only 1 recovered.
 # Usage
 
     cd ./covid-19-data-test
+    
+### for pomber data source: 
+
     firefox ./index.html
 
+### for Hopkins data source:     
+    
+    firefox ./indexHopkins.html
+    
 # License
 
 MIT
