@@ -1,8 +1,12 @@
 # Description
 
-Useful for data testing. Shows if any value for confirmed, deaths and recovered has 
-lower next value, e.g. for "Poland" at date "2020-3-18" is 13 recovered and next day 
-at "2020-3-19" there is only 1 recovered.
+Useful for data testing, shows invalid values, e.g. for "Poland" at date 
+"2020-3-18" is 13 recovered and next day at "2020-3-19" there is only 1 recovered. 
+
+The idea behind this tool is very simple. Just set last value as max and search 
+all higher values (invalid) and shift the max if value is lower (valid).
+
+So to use this tool, make sure the last value is valid.
 
 # Install
 

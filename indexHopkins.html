@@ -22,29 +22,25 @@
  
  <body>
   
-  <div class="title">Invalid Confirmed Data</div><div id="C"></div>
-  <div class="title">Invalid Death Data</div><div id="D"></div>
-  <div class="title">Invalid Recovered Data</div><div id="R"></div>
+  <div class="title">Invalid values for: US - Confirmed</div><div id="UC"></div>
+  <div class="title">Invalid values for: US - Deaths</div><div id="UD"></div>
+  <div class="title">Invalid values for: Global - Confirmed</div><div id="C"></div>
+  <div class="title">Invalid values for: Global - Deaths</div><div id="D"></div>
+  <div class="title">Invalid values for: Global - Recovered</div><div id="R"></div>
   
   <script type="text/javascript">
     
-    function setRow(a, b, c, d, e) {
+    function setRow(...a) {
     
-        let td = '<tr>';
-        td += '<td>'+a+'</td>';
-        td += '<td>'+b+'</td>';
-        td += '<td>'+c+'</td>';
-        td += '<td>'+d+'</td>';
-        td += '<td>'+e+'</td>';
-        td += '</tr>';
-        
-        return td;
+        let output = '<tr>';
+        for (let i=0; i<a.length; i++) { 
+            output += '<td>'+a[i]+'</td>';
+        }
+        output += '</tr>';
+        return output;
     }
     
-    function showInvalidData(path, type) {
-        fetch(path)
-        .then(response => response.text())
-        .then(data => {
+    function checkGlobal(data, type) {
             
             let aData = data.split('\n');
             let aKeys = aData.length-2;
@@ -52,21 +48,25 @@
             
             let output = '<table>';
             
-            output += setRow( '<b>Place</b>', '<b>Index</b>', '<b>Date</b>', '<b>Type</b>', '<b>Value</b>');
+            output += setRow( '<b>Place</b>', '<b>Date</b>', '<b>Type</b>', '<b>Value</b>');
             
             for (let k=1; k < aKeys; k++) {
                 
                 let row = aData[k].split(',');
                 let s = row.length-1;
-                let key = row[0]; if (key === '') { key = row[1]; } // for CSV bug
                 let maxR = parseInt(row[s]);
+                let skip = 0;
+                let key = '';
                 
-                for (let i=s; i>5; i--) {
+                if (key === '') { key = row[1]; } else { key = row[0]; }
+                skip = 5;
+                
+                for (let i=s; i>skip; i--) {
                     
                     let p = i-1;   // previous index 
                     
                     if (parseInt(row[p]) > maxR) {
-                        output += setRow( key, p, aHeader[p], type, row[p] );
+                        output += setRow( key, aHeader[p], type, row[p] );
                     } else {
                         maxR = parseInt(row[p]); // replace higher value with last correct one
                     }
@@ -77,14 +77,67 @@
             if (type === "Confirmed") { document.getElementById("C").innerHTML = output; }
             if (type === "Deaths") { document.getElementById("D").innerHTML = output; }
             if (type === "Recovered") { document.getElementById("R").innerHTML = output; }
+    }
+    
+    function checkUS(data, type) {
+            
+            let aData = data.split('\n');
+            let aKeys = aData.length-2;
+            let aDates = '';
+            
+            if (type === 'Confirmed') { aDates = aData[0].split('Combined_Key')[1].substr(1).split(','); }
+            if (type === 'Deaths') { aDates = aData[0].split('Population')[1].substr(1).split(','); }
+            
+            let output = '<table>';
+            
+            output += setRow( '<b>Place</b>', '<b>Date</b>', '<b>Type</b>', '<b>Value</b>');
+            
+            for (let k=1; k < aKeys; k++) {
+                
+                let [trash, key, valS] = aData[k].split('"');
+                let values = valS.substr(1).split(','); if (type === 'Deaths') { values.shift(); }
+                let s = values.length-1;
+                let maxR = parseInt(values[s]);
+                
+                for (let i=s; i>0; i--) {
+                    
+                    let p = i-1;   // previous index 
+                    
+                    if (parseInt(values[p]) > maxR) {
+                        output += setRow( key, aDates[p], type, values[p] );
+                    } else {
+                        maxR = parseInt(values[p]); // replace higher value with last correct one
+                    }
+                }
+            } 
+            output += '</table>';
+            
+            if (type === "Confirmed") { document.getElementById("UC").innerHTML = output; }
+            if (type === "Deaths") { document.getElementById("UD").innerHTML = output; }
+    }
+    
+    function showInvalidData(path, type, scope) {
+        fetch(path)
+        .then(response => response.text())
+        .then(data => {
+            
+            if (scope === "global") {
+                checkGlobal(data, type);
+            } else {
+                checkUS(data, type);
+            }
         });
     }
     
-    showInvalidData("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv", "Confirmed");
+    let dir = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/';
+        dir += 'csse_covid_19_data/csse_covid_19_time_series/';
     
-    showInvalidData("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv", "Deaths");
+    showInvalidData(dir+"time_series_covid19_confirmed_global.csv", "Confirmed", "global");
+    showInvalidData(dir+"time_series_covid19_deaths_global.csv", "Deaths", "global");
+    showInvalidData(dir+"time_series_covid19_recovered_global.csv", "Recovered", "global");
     
-    showInvalidData("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv", "Recovered");
+    showInvalidData(dir+"time_series_covid19_confirmed_US.csv", "Confirmed", "US");
+    showInvalidData(dir+"time_series_covid19_deaths_US.csv", "Deaths", "US");
     
   </script>
   
