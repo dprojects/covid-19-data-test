@@ -20,9 +20,15 @@ So to use this tool, make sure the last value is valid.
 
     firefox ./index.html
 
+> ![screen1](https://github.com/dprojects/covid-19-data-test/blob/master/screen1.png)
+    
+    
 ### for Hopkins data source:     
     
     firefox ./indexHopkins.html
+
+> ![screen2](https://github.com/dprojects/covid-19-data-test/blob/master/screen2.png)
+   
     
 # License
 

@@ -22,6 +22,7 @@
  
  <body>
   
+  <div class="title">Summary for invalid values</div><div id="SUM"></div>
   <div class="title">Invalid values for: US - Confirmed</div><div id="UC"></div>
   <div class="title">Invalid values for: US - Deaths</div><div id="UD"></div>
   <div class="title">Invalid values for: Global - Confirmed</div><div id="C"></div>
@@ -29,6 +30,13 @@
   <div class="title">Invalid values for: Global - Recovered</div><div id="R"></div>
   
   <script type="text/javascript">
+    
+    // used for summary report, i - for invalid, a - for all
+    var iUc = 0; var aUc = 0;
+    var iUd = 0; var aUd = 0;
+    var iGc = 0; var aGc = 0;
+    var iGd = 0; var aGd = 0;
+    var iGr = 0; var aGr = 0;
     
     function setRow(...a) {
     
@@ -63,10 +71,20 @@
                 
                 for (let i=s; i>skip; i--) {
                     
+                    if (type === "Confirmed") { aGc++; }
+                    if (type === "Deaths") { aGd++; }
+                    if (type === "Recovered") { aGr++; }
+                    
                     let p = i-1;   // previous index 
                     
                     if (parseInt(row[p]) > maxR) {
+                    
+                        if (type === "Confirmed") { iGc++; }
+                        if (type === "Deaths") { iGd++; }
+                        if (type === "Recovered") { iGr++; }
+                    
                         output += setRow( key, aHeader[p], type, row[p] );
+                        
                     } else {
                         maxR = parseInt(row[p]); // replace higher value with last correct one
                     }
@@ -101,10 +119,18 @@
                 
                 for (let i=s; i>0; i--) {
                     
+                    if (type === "Confirmed") { aUc++; }
+                    if (type === "Deaths") { aUd++; }
+                    
                     let p = i-1;   // previous index 
                     
                     if (parseInt(values[p]) > maxR) {
+                    
+                        if (type === "Confirmed") { iUc++; }
+                        if (type === "Deaths") { iUd++; }
+                    
                         output += setRow( key, aDates[p], type, values[p] );
+                        
                     } else {
                         maxR = parseInt(values[p]); // replace higher value with last correct one
                     }
@@ -126,6 +152,18 @@
             } else {
                 checkUS(data, type);
             }
+            
+            let sum = '';
+            sum += '<table>';
+            sum += setRow('<b>Type</b>', '<b>Invalid</b>', '<b>All values</b>', '<b>Invalid % of all</b>' );
+            sum += setRow('Invalid values for US - Confirmed: ', iUc, aUc, ((iUc/aUc)*100).toFixed(2) );
+            sum += setRow('Invalid values for US - Deaths: ', iUd, aUd, ((iUd/aUd)*100).toFixed(2) );
+            sum += setRow('Invalid values for Global - Confirmed: ', iGc, aGc, ((iGc/aGc)*100).toFixed(2) );
+            sum += setRow('Invalid values for Global - Deaths: ', iGd, aGd, ((iGd/aGd)*100).toFixed(2) );
+            sum += setRow('Invalid values for Global - Recovered: ', iGr, aGr, ((iGr/aGr)*100).toFixed(2) );
+            sum += '</table>';
+            
+            document.getElementById("SUM").innerHTML = sum;
         });
     }
     
