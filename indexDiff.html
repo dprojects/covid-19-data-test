@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>covid-19-data-test</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <meta http-equiv="Content-Script-Type" content="text/javascript" />
+ </head>
+ 
+ <style>
+    table td {
+        padding: 5px 15px;
+        border-bottom: 1px dotted red;
+    }
+    .title {
+        font-size: 30px;
+        font-weight: bold;
+        background-color: #DDDDFF;
+        margin: 15px 0px 5px 0px;
+    }
+ </style>
+ 
+ <body>
+  
+  <div class="title">Invalid values (diff Pomber vs Hopkins):</div><div id="OUT"></div>
+  
+  <script type="text/javascript">
+    
+    var iG = {};
+    
+    function setRow(type, ...a) {
+    
+        let output = '<tr>';
+        a.map(function (x, i) { 
+            output += '<t'+( type ? "d" : "h" )+' class="col'+i+'">'+x+'</t'+( type ? "d" : "h" )+'>';
+        });
+        output += '</tr>';
+        
+        return output;
+    }
+
+    function checkPomber() {
+        fetch("https://pomber.github.io/covid19/timeseries.json")
+        .then(response => response.json())
+        .then(data => {
+            
+            let output = '<table>';
+            output += setRow(1, '<b>Source</b>', '<b>Place</b>', '<b>Index</b>', 
+                                '<b>Date</b>', '<b>Type</b>', '<b>Value</b>');
+            
+            Object.keys(data).forEach(function(key) {
+                
+                let d = data[key];
+                            
+                for(let i=0; i<d.length; i++) {
+                
+                    let dC = 0;
+                    let dD = 0;
+                    let dR = 0;
+                    
+                    if (typeof iG[key] === 'undefined') { dC++; dD++; dR++; }
+                    else {
+                        if (typeof iG[key]['confirmed'] === 'undefined') { dC++; }
+                        else if (iG[key]['confirmed'][i] !== d[i].confirmed) { dC++; }
+                    
+                        if (typeof iG[key]['deaths'] === 'undefined') { dD++; }
+                        else if (iG[key]['deaths'][i] !== d[i].deaths) { dD++; }
+                    
+                        if (typeof iG[key]['recovered'] === 'undefined') { dR++; }
+                        else if (iG[key]['recovered'][i] !== d[i].recovered) { dR++; }
+                    }
+                    
+                    if (dC > 0) { output += setRow( 1, 'Pomber', key, i, d[i].date, 'confirmed', d[i].confirmed ); }
+                    if (dD > 0) { output += setRow( 1, 'Pomber', key, i, d[i].date, 'deaths', d[i].deaths ); }
+                    if (dR > 0) { output += setRow( 1, 'Pomber', key, i, d[i].date, 'recovered', d[i].recovered ); }
+                }
+            }); 
+            output += '</table>';
+            document.getElementById("OUT").innerHTML = output;
+        });
+    }
+    
+    
+    function setGlobal(path, type) {
+        fetch(path)
+        .then(response => response.text())
+        .then(data => {
+            
+            let aData = data.split('\n');
+            let aKeys = aData.length-2;
+            
+            let [state, region, lat, long, ...dates ] = aData[0].split(',');
+            
+            for (let k=1; k < aKeys; k++) {
+                
+                [state, region, lat, long, ...values ] = aData[k].split(',');
+                let key = ( state === '') ? region.toString().trim() : state.toString().trim();
+                
+                if (key === '"Korea') { key = 'Korea, South'; values.shift(); }
+                
+                for (let i=0; i<values.length; i++) {
+                    
+                    let value = parseInt(values[i]);
+                    
+                    if (typeof iG[key] === 'undefined') { iG[key] = {}; }
+                    if (typeof iG[key][type] === 'undefined') { iG[key][type] = []; }
+                    
+                    iG[key][type].push(value);
+                }
+            }
+        });
+    }
+    
+    function setObject(callback) {
+
+        let dir = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/';
+        dir += 'csse_covid_19_data/csse_covid_19_time_series/';
+    
+        setGlobal(dir+"time_series_covid19_confirmed_global.csv", "confirmed");
+        setGlobal(dir+"time_series_covid19_deaths_global.csv", "deaths");
+        setGlobal(dir+"time_series_covid19_recovered_global.csv", "recovered");
+    
+        callback();
+    }
+    
+    setObject(checkPomber);
+        
+  </script>
+  
+ </body>
+</html>

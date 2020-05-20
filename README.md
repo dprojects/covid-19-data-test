@@ -28,7 +28,14 @@ So to use this tool, make sure the last value is valid.
     firefox ./indexHopkins.html
 
 > ![screen2](https://github.com/dprojects/covid-19-data-test/blob/master/screen2.png)
-   
+
+### for diff Pomber vs Hopkins:     
+    
+This show different values in [Pomber](https://pomber.github.io/covid19/timeseries.json) source.
+        
+    firefox ./indexDiff.html
+
+> ![screen3](https://github.com/dprojects/covid-19-data-test/blob/master/screen3.png)
     
 # License
 
