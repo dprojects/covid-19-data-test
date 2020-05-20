@@ -51,14 +51,13 @@
     function checkGlobal(data, type) {
             
             let aData = data.split('\n');
-            let aKeys = aData.length-2;
             let aHeader = aData[0].split(',');
             
             let output = '<table>';
             
             output += setRow( '<b>Place</b>', '<b>Date</b>', '<b>Type</b>', '<b>Value</b>');
             
-            for (let k=1; k < aKeys; k++) {
+            for (let k=1; k < aData.length-1; k++) {
                 
                 let row = aData[k].split(',');
                 let s = row.length-1;
@@ -100,7 +99,6 @@
     function checkUS(data, type) {
             
             let aData = data.split('\n');
-            let aKeys = aData.length-2;
             let aDates = '';
             
             if (type === 'Confirmed') { aDates = aData[0].split('Combined_Key')[1].substr(1).split(','); }
@@ -110,7 +108,7 @@
             
             output += setRow( '<b>Place</b>', '<b>Date</b>', '<b>Type</b>', '<b>Value</b>');
             
-            for (let k=1; k < aKeys; k++) {
+            for (let k=1; k < aData.length-1; k++) {
                 
                 let [trash, key, valS] = aData[k].split('"');
                 let values = valS.substr(1).split(','); if (type === 'Deaths') { values.shift(); }

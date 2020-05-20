@@ -87,11 +87,9 @@
         .then(data => {
             
             let aData = data.split('\n');
-            let aKeys = aData.length-2;
-            
             let [state, region, lat, long, ...dates ] = aData[0].split(',');
             
-            for (let k=1; k < aKeys; k++) {
+            for (let k=1; k < aData.length-1; k++) {
                 
                 [state, region, lat, long, ...values ] = aData[k].split(',');
                 let key = ( state === '') ? region.toString().trim() : state.toString().trim();
